@@ -15,4 +15,7 @@ Major modification:
 
 3. Correct the landmark positions in Unity to let them fit the figure model.
 
+## Demo
+![A short demo](demo.gif)
+
 More update in the future.
