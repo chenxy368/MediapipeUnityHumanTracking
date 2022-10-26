@@ -9,7 +9,7 @@ see reference https://github.com/TesseraktZero/UnityHandTrackingWithMediapipe.gi
 
 Major modification:
 
-1. Change from android+PC to PC. Using ZeroMq to send data from python program to Unity.
+1. Change from android+PC to PC. Use ZeroMq to send data from python program to Unity.
 
 2. Remove the Kalman filter in Unity. Implement a new Kalman filter with OpenCV in python.
 
