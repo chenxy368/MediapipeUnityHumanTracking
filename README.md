@@ -1,8 +1,6 @@
 # MediapipeUnityHumanTracking
 Windows mediapipe+unity human tracking.
 
-Process communication with ZeroMQ, run .py first and then run project in Unity.
-
 Currently only support hand.
 
 Run app.py and then run the scene in unity. (I set the timeout for socket to 10 seconds.)
