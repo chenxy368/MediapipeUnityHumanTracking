@@ -1,7 +1,4 @@
-using LandmarkInterface.Filter;
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,72 +6,40 @@ namespace LandmarkInterface
 {
     public class LandmarkResultSet : MonoBehaviour
     {
-        public bool UseFilter = true;
-
-        [Range(0.0f, 1.0f)] public double FilterTimeInterval = 0.4;
-        [Range(0.0f, 1.0f)] public double FilterNoise = 0.1;
-        [Header("Filter extreme data exceeding the limit")]
-        [Range(0.0f, 1.0f)] public double DisplacementLimit = 0.4;
-
-        private LandmarkListFilter LeftHandFilter;
-        private LandmarkListFilter RightHandFilter;
-
+        /// <summary>
+        /// Left hand Mediapipe normalized landmark list.
+        /// </summary>
         private List<Vector3> leftHandLandmarks;
-        public List<Vector3> LeftHandLandmarks
-        {
-            get => leftHandLandmarks;
-            set
-            {
-                if (UseFilter)
-                {
-                    LeftHandFilter.CorrectAndPredict(value);
-                }
-                leftHandLandmarks = value;
-            }
-        }
 
+        /// <summary>
+        /// Right hand Mediapipe normalized landmark list.
+        /// </summary>
         private List<Vector3> rightHandLandmarks;
-        public List<Vector3> RightHandLandmarks
-        {
-            get => rightHandLandmarks;
-            set
-            {
-                if (UseFilter)
-                {
-                    RightHandFilter.CorrectAndPredict(value);
-                }
-                rightHandLandmarks = value;
-            }
-        }
 
-        //private UDPReceive udpReceive;
+        /// <summary>
+        /// ZeroMq receiving client
+        /// <see cref="Client"/>
+        /// </summary>
         private Client client;
+
+        /// <summary>
+        /// Initialize the client with the Client property of Manager
+        /// </summary>
         private void Start() {
-            //udpReceive = GameObject.Find("Manager").GetComponent<UDPReceive>();
             client = GameObject.Find("Manager").GetComponent<Client>();
         }
 
-        private void Awake()
-        {
-            LeftHandFilter = new LandmarkListFilter(FilterTimeInterval, FilterNoise, DisplacementLimit);
-            RightHandFilter = new LandmarkListFilter(FilterTimeInterval, FilterNoise, DisplacementLimit);
-        }
-
-        private void Update()
-        {
-            LeftHandFilter.UpdateFilterParameter(FilterTimeInterval, FilterNoise, DisplacementLimit);
-            RightHandFilter.UpdateFilterParameter(FilterTimeInterval, FilterNoise, DisplacementLimit);
-        }
-
+        /// <summary>
+        /// Update the landmark lists with the data from ZeroMq.
+        /// </summary>
+        /// <param name="landmarkType">Handedness.</param>
         public void UpdateLandmark(LandmarkType landmarkType)
         {   
             
             if (landmarkType == LandmarkType.LeftHand)
             {
-                //if (!String.IsNullOrEmpty(udpReceive.rightdata)) 
                 if (!String.IsNullOrEmpty(client.rightdata)) 
                 {
-                    //string[] points = udpReceive.rightdata.Split(',');
                     string[] points = client.rightdata.Split(',');
                     List<Vector3> output = new List<Vector3>();
                     for (int i = 0; i < 21; ++i) {
@@ -86,15 +51,13 @@ namespace LandmarkInterface
                         output.Add(v);
                     }
 
-                    LeftHandLandmarks = output; 
+                    leftHandLandmarks = output; 
                 }
             }
             else if (landmarkType == LandmarkType.RightHand)
             {
-                //if (!String.IsNullOrEmpty(udpReceive.leftdata))
                 if (!String.IsNullOrEmpty(client.leftdata))
                 {
-                    //string[] points = udpReceive.leftdata.Split(',');
                     string[] points = client.leftdata.Split(',');
                     List<Vector3> output = new List<Vector3>();
                     for (int i = 0; i < 21; ++i) {
@@ -106,7 +69,7 @@ namespace LandmarkInterface
                         output.Add(v);
                     }
                 
-                    RightHandLandmarks = output; 
+                    rightHandLandmarks = output; 
                 }
             }
             else
@@ -115,33 +78,23 @@ namespace LandmarkInterface
             }
         }
 
+        /// <summary>
+        /// Getter of the private landmark list.
+        /// </summary>
+        /// <param name="landmarkType">Handedness.</param>
+        /// <returns>The landmark list corresponding the input handedness.</returns>
         public List<Vector3> GetLandmarks(LandmarkType landmarkType)
         {
-            if (UseFilter)
+            if (landmarkType == LandmarkType.LeftHand)
             {
-                if (landmarkType == LandmarkType.LeftHand)
-                {
-                    return LeftHandFilter.GetPositions();
-                }
-                else if (landmarkType == LandmarkType.RightHand)
-                {
-                    return RightHandFilter.GetPositions();
-                }
+                return leftHandLandmarks != null ? leftHandLandmarks : null;
             }
-            else
+            else if (landmarkType == LandmarkType.RightHand)
             {
-                if (landmarkType == LandmarkType.LeftHand)
-                {
-                    return LeftHandLandmarks != null ? LeftHandLandmarks : null;
-                }
-                else if (landmarkType == LandmarkType.RightHand)
-                {
-                    return RightHandLandmarks != null ? RightHandLandmarks : null;
-                }
+                return rightHandLandmarks != null ? rightHandLandmarks : null;
             }
             return null;
         }
-
     }
 
 }
